@@ -10,7 +10,12 @@
       "Bash(mv Home.jsx Home.styles.js Home/)",
       "Bash(mv BuyTickets.jsx BuyTickets.styles.js BuyTickets/)",
       "Bash(mv CreateConcert.jsx CreateConcert.styles.js CreateConcert/)",
-      "Bash(find /c/Projects/project-mern/server -type f -name *route* -o -name *router*)"
+      "Bash(find /c/Projects/project-mern/server -type f -name *route* -o -name *router*)",
+      "Bash(head -30 /Users/itamar/Documents/Uni/workshop/tickets/client/src/services/api/*.js)",
+      "Bash(find /Users/itamar/Documents/Uni/workshop/tickets/client/src -type f \\\\\\(-name *.js -o -name *.jsx \\\\\\))",
+      "Bash(find /Users/itamar/Documents/Uni/workshop/tickets/server -type f \\\\\\(-name *.js -o -name *.jsx \\\\\\))",
+      "Bash(npm install:*)",
+      "Bash(npx tsc:*)"
     ]
   }
 }

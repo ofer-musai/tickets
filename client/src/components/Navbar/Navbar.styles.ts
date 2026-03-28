@@ -1,0 +1,58 @@
+import type { CSSProperties } from 'react';
+import { colors, fontSize, fontWeight, borderRadius, zIndex } from '../../styles/tokens';
+
+export const styles: Record<string, CSSProperties> = {
+  wrapper: {
+    position: 'sticky',
+    top: 0,
+    zIndex: zIndex.navbar,
+  },
+  nav: {
+    height: '64px',
+    display: 'flex',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    padding: '16px 40px',
+    backgroundColor: colors.bgNavbar,
+    backdropFilter: 'blur(16px)',
+    borderBottom: `1px solid ${colors.borderSubtle}`,
+  },
+  backBtn: {
+    position: 'absolute',
+    top: '100%',
+    left: '40px',
+    marginTop: '16px',
+    backgroundColor: colors.bgNavbar,
+    backdropFilter: 'blur(16px)',
+    border: `1px solid ${colors.borderDefault}`,
+    color: colors.textPrimary,
+    borderRadius: borderRadius.sm,
+    padding: '6px 14px',
+    fontSize: fontSize.md,
+    cursor: 'pointer',
+  },
+  logo: {
+    fontSize: fontSize.xl6,
+    fontWeight: fontWeight.black,
+    letterSpacing: '2.4px',
+    textTransform: 'uppercase',
+    cursor: 'pointer',
+  },
+  logoPrimary: { color: colors.primary },
+  logoSecondary: { color: colors.secondary },
+  createBtn: {
+    display: 'flex',
+    alignItems: 'center',
+    gap: '6px',
+    backgroundColor: 'transparent',
+    border: `1px solid ${colors.secondary}`,
+    color: colors.secondary,
+    padding: '8px 19px',
+    borderRadius: borderRadius.sm,
+    fontSize: fontSize.md,
+    fontWeight: fontWeight.bold,
+    cursor: 'pointer',
+    letterSpacing: '1.3px',
+    textTransform: 'uppercase',
+  },
+};
