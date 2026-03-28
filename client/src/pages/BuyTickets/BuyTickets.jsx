@@ -1,22 +1,79 @@
-import { useState } from 'react';
+import { useState, useCallback, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
+import { loadStripe } from '@stripe/stripe-js';
+import { EmbeddedCheckoutProvider, EmbeddedCheckout } from '@stripe/react-stripe-js';
 import { styles } from './BuyTickets.styles';
-import { styles as common } from '../../styles/common.styles';
 import { useGetConcert } from '../../services/api/hooks/useConcert';
 
+const stripePromise = loadStripe("pk_test_51TFD3IGfieNLbxlbjwAgxSZ4gQ0uYqZFjcIkokAqIpSTUCvBQ6LhTaecERVSRtXMU1FJyOWZWqQl5ekk492gkHC000aT6WhGTB");
+
+// --- Return/Success page (route: /return) ---
+export function BuyTicketsReturn() {
+  const [status, setStatus] = useState(null);
+  const [customerEmail, setCustomerEmail] = useState('');
+  const navigate = useNavigate();
+
+  useEffect(() => {
+    const sessionId = new URLSearchParams(window.location.search).get('session_id');
+    fetch(`/api/session-status?session_id=${sessionId}`)
+      .then(res => res.json())
+      .then(data => {
+        setStatus(data.status);
+        setCustomerEmail(data.customer_email);
+      });
+  }, []);
+
+  if (status === 'open') {
+    navigate('/checkout');
+    return null;
+  }
+
+  return (
+    <div style={styles.page}>
+      <div style={styles.inner}>
+        {status === 'complete' ? (
+          <div style={{ textAlign: 'center', padding: '6rem 2rem' }}>
+            <p style={styles.eyebrow}>Purchase Confirmed</p>
+            <h1 style={styles.heading}>See you at the <span className="gradient-text">show.</span></h1>
+            <p style={{ color: '#4A4A6A', marginTop: '1rem' }}>
+              A confirmation will be sent to <strong>{customerEmail}</strong>.
+            </p>
+            <button
+              onClick={() => navigate('/')} // Back to homepage
+              style={styles.buyBtn}
+              className="btn-primary"
+            >
+              Back to Concerts
+            </button>
+          </div>
+        ) : (
+          <div style={{ textAlign: 'center', padding: '6rem 2rem', color: '#4A4A6A' }}>
+            Loading...
+          </div>
+        )}
+      </div>
+    </div>
+  );
+}
+
+// --- Main BuyTickets page (route: /concerts/:id/buy) ---
 export default function BuyTickets() {
   const { id } = useParams();
   const navigate = useNavigate();
   const { data: concert, isLoading, error } = useGetConcert(id);
 
-  const [form, setForm] = useState({ name: '', email: '', card: '', expiry: '', cvv: '' });
-
-  const handleChange = (e) => setForm({ ...form, [e.target.name]: e.target.value });
-
-  const handleSubmit = (e) => {
-    e.preventDefault();
-    alert(`Purchase confirmed for ${concert.title}!`);
-  };
+const fetchClientSecret = useCallback(() => {
+  return fetch('/api/create-checkout-session', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      title: concert.title,
+      price: concert.price, 
+    }),
+  })
+    .then(res => res.json())
+    .then(data => data.clientSecret);
+}, [concert]);
 
   if (isLoading) {
     return (
@@ -51,7 +108,7 @@ export default function BuyTickets() {
         <p style={styles.eyebrow}>Your Digital Ticket</p>
         <h1 style={styles.heading}>You're going <span className="gradient-text">live.</span></h1>
 
-        {/* Ticket */}
+        {/* Ticket — unchanged */}
         <div style={styles.ticket}>
           <div style={styles.stub}>
             <div style={styles.stubDate}>{concert.date.split(',')[0]}</div>
@@ -104,47 +161,13 @@ export default function BuyTickets() {
           <img src={concert.imageUrl} alt="" style={styles.bgImage} />
         </div>
 
-        {/* Payment form */}
-        <form style={styles.form} onSubmit={handleSubmit}>
+        {/* Stripe Embedded Checkout — replaces the payment form */}
+        <div style={styles.form}>
           <p style={styles.formTitle}>Payment Details</p>
-
-          <div style={styles.formRow}>
-            <div style={common.fieldGroup}>
-              <label style={common.label}>Full Name</label>
-              <input style={common.input} name="name" placeholder="John Doe" value={form.name} onChange={handleChange} required />
-            </div>
-            <div style={common.fieldGroup}>
-              <label style={common.label}>Email</label>
-              <input style={common.input} name="email" type="email" placeholder="john@example.com" value={form.email} onChange={handleChange} required />
-            </div>
-          </div>
-
-          <div style={common.fieldGroup}>
-            <label style={common.label}>Card Number</label>
-            <input style={common.input} name="card" placeholder="1234 5678 9012 3456" maxLength={19} value={form.card} onChange={handleChange} required />
-          </div>
-
-          <div style={styles.formRow}>
-            <div style={common.fieldGroup}>
-              <label style={common.label}>Expiry Date</label>
-              <input style={common.input} name="expiry" placeholder="MM / YY" maxLength={7} value={form.expiry} onChange={handleChange} required />
-            </div>
-            <div style={common.fieldGroup}>
-              <label style={common.label}>CVV</label>
-              <input style={common.input} name="cvv" placeholder="•••" maxLength={4} value={form.cvv} onChange={handleChange} required />
-            </div>
-          </div>
-
-          <div style={styles.formFooter}>
-            <div style={styles.total}>
-              <span style={styles.totalLabel}>Total</span>
-              <span style={styles.totalValue}>{concert.price}</span>
-            </div>
-            <button type="submit" style={styles.buyBtn} className="btn-primary">
-              🎟️ Complete Purchase
-            </button>
-          </div>
-        </form>
+          <EmbeddedCheckoutProvider stripe={stripePromise} options={{ fetchClientSecret }}>
+            <EmbeddedCheckout />
+          </EmbeddedCheckoutProvider>
+        </div>
 
       </div>
     </div>
