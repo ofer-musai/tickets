@@ -97,7 +97,7 @@ export default function BuyTickets() {
               </div>
               <div style={styles.metaItem}>
                 <span style={styles.metaLabel}>Price</span>
-                <span style={styles.metaValueAccent}>{concert.price}</span>
+                <span style={styles.metaValueAccent}>${concert.price}</span>
               </div>
             </div>
             <div style={styles.ticketFooter}>
@@ -147,7 +147,7 @@ export default function BuyTickets() {
           <div style={styles.formFooter}>
             <div style={styles.total}>
               <span style={styles.totalLabel}>Total</span>
-              <span style={styles.totalValue}>{concert.price}</span>
+              <span style={styles.totalValue}>${concert.price}</span>
             </div>
             <button type="submit" style={styles.buyBtn} className="btn-primary">
               🎟️ Complete Purchase

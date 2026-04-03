@@ -22,7 +22,7 @@ export default function ConcertCard({ concert, onClick }: ConcertCardProps) {
             📍 {concert.venue}
           </div>
         </div>
-        <div style={styles.price}>{concert.price}</div>
+        <div style={styles.price}>${concert.price}</div>
       </div>
     </div>
   );

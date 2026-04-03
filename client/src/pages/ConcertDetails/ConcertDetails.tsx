@@ -55,7 +55,7 @@ export default function ConcertDetails() {
           </div>
           <div style={styles.metaChip}>
             <span style={styles.metaChipIcon}>🎫</span>
-            Starting from {concert.price}
+            Starting from ${concert.price}
           </div>
           <div style={styles.metaChip}>
             <span style={styles.metaChipIcon}>⏰</span>
@@ -87,7 +87,7 @@ export default function ConcertDetails() {
         <div style={styles.buySection}>
           <div style={styles.priceBlock}>
             <div style={styles.priceLabel}>Ticket Price</div>
-            <div style={styles.priceValue}>{concert.price}</div>
+            <div style={styles.priceValue}>${concert.price}</div>
             <div style={styles.priceNote}>per person · includes all fees</div>
           </div>
           <button style={styles.buyBtn} className="btn-primary" onClick={() => navigate(`/buy/${id}`)}>

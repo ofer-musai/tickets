@@ -9,11 +9,26 @@ async function seed(): Promise<void> {
     console.log('Seeded hello message.');
   }
 
-  const concertCount = await Concert.countDocuments();
-  if (concertCount === 0) {
-    await Concert.insertMany(concerts);
-    console.log('Seeded default concerts.');
-  }
+  // Always re-seed concerts to ensure schema is up to date
+  await Concert.deleteMany({});
+  const seedData = concerts.map((c) => ({
+    imageUrl: c.imageUrl,
+    title: c.title,
+    date: c.date,
+    venue: c.venue,
+    price: c.price,
+    doorsOpen: c.doorsOpen,
+    description: c.description,
+    genre: c.genre,
+    capacity: c.capacity,
+    ageLimit: c.ageLimit,
+    photography: c.photography,
+    highlights: c.highlights,
+    ticketCount: c.capacity,
+    ticketsAvailable: c.capacity,
+  }));
+  await Concert.insertMany(seedData);
+  console.log('Seeded default concerts.');
 }
 
 export { seed };

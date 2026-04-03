@@ -1,7 +1,9 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import type { ChangeEvent, FormEvent } from 'react';
 import { styles } from './ConcertForm.styles';
 import { styles as common } from '../../styles/common.styles';
+import { useCreateConcertMutation, useUpdateConcertMutation } from '../../services/api/hooks/useConcertMutations';
+import type { Concert } from '../../services/api/api';
 
 interface FormState {
   title: string;
@@ -10,6 +12,7 @@ interface FormState {
   date: string;
   doorsOpen: string;
   price: string;
+  ticketCount: string;
   description: string;
   genre: string;
   capacity: string;
@@ -24,6 +27,7 @@ const EMPTY_FORM: FormState = {
   date: '',
   doorsOpen: '',
   price: '',
+  ticketCount: '',
   description: '',
   genre: '',
   capacity: '',
@@ -31,19 +35,74 @@ const EMPTY_FORM: FormState = {
   photography: '',
 };
 
-export default function ConcertForm() {
+interface ConcertFormProps {
+  mode?: 'create' | 'edit';
+  initialValues?: Partial<Concert>;
+  concertId?: string;
+  onSuccess?: () => void;
+}
+
+export default function ConcertForm({ mode = 'create', initialValues, concertId, onSuccess }: ConcertFormProps) {
+  const createMutation = useCreateConcertMutation();
+  const updateMutation = useUpdateConcertMutation();
+
   const [form, setForm] = useState<FormState>(EMPTY_FORM);
   const [submitted, setSubmitted] = useState<boolean>(false);
+
+  useEffect(() => {
+    if (initialValues) {
+      setForm({
+        title: initialValues.title ?? '',
+        imageUrl: initialValues.imageUrl ?? '',
+        venue: initialValues.venue ?? '',
+        date: initialValues.date ?? '',
+        doorsOpen: initialValues.doorsOpen ?? '',
+        price: initialValues.price !== undefined ? String(initialValues.price) : '',
+        ticketCount: initialValues.ticketCount !== undefined ? String(initialValues.ticketCount) : '',
+        description: initialValues.description ?? '',
+        genre: initialValues.genre ?? '',
+        capacity: initialValues.capacity !== undefined ? String(initialValues.capacity) : '',
+        ageLimit: initialValues.ageLimit ?? '',
+        photography: initialValues.photography ?? '',
+      });
+    }
+  }, [initialValues]);
 
   const handleChange = (e: ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) =>
     setForm({ ...form, [e.target.name]: e.target.value });
 
+  const isPending = createMutation.isPending || updateMutation.isPending;
+  const mutationError = createMutation.error || updateMutation.error;
+
   const handleSubmit = (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    setSubmitted(true);
+    const payload = {
+      title: form.title,
+      imageUrl: form.imageUrl,
+      venue: form.venue,
+      date: form.date,
+      doorsOpen: form.doorsOpen,
+      price: Number(form.price),
+      ticketCount: Number(form.ticketCount),
+      description: form.description,
+      genre: form.genre,
+      capacity: Number(form.capacity),
+      ageLimit: form.ageLimit,
+      photography: form.photography,
+    };
+
+    if (mode === 'edit' && concertId) {
+      updateMutation.mutate({ id: concertId, data: payload }, {
+        onSuccess: () => onSuccess?.(),
+      });
+    } else {
+      createMutation.mutate(payload, {
+        onSuccess: () => setSubmitted(true),
+      });
+    }
   };
 
-  if (submitted) {
+  if (submitted && mode === 'create') {
     return (
       <div style={styles.success}>
         <div style={styles.successIcon}>🎉</div>
@@ -94,9 +153,22 @@ export default function ConcertForm() {
             <input style={common.input} type="time" name="doorsOpen" value={form.doorsOpen} onChange={handleChange} required />
           </div>
         </div>
-        <div style={common.fieldGroup}>
-          <label style={common.label}>Ticket Price ($)</label>
-          <input style={common.input} type="number" name="price" placeholder="e.g. 49" min="0" value={form.price} onChange={handleChange} required />
+      </div>
+
+      <div style={styles.divider} />
+
+      {/* Section: Tickets */}
+      <div style={styles.section}>
+        <p style={styles.sectionLabel}>Tickets</p>
+        <div style={styles.row}>
+          <div style={common.fieldGroup}>
+            <label style={common.label}>Ticket Price ($)</label>
+            <input style={common.input} type="number" name="price" placeholder="e.g. 49" min="0" value={form.price} onChange={handleChange} required />
+          </div>
+          <div style={common.fieldGroup}>
+            <label style={common.label}>Number of Tickets</label>
+            <input style={common.input} type="number" name="ticketCount" placeholder="e.g. 500" min="1" value={form.ticketCount} onChange={handleChange} required />
+          </div>
         </div>
       </div>
 
@@ -160,8 +232,12 @@ export default function ConcertForm() {
         </div>
       </div>
 
-      <button style={styles.submitBtn} className="btn-primary" type="submit">
-        🎟️ Publish Concert
+      {mutationError && (
+        <p style={{ color: '#FF2E63', fontSize: '11px', marginBottom: '-8px' }}>{mutationError.message}</p>
+      )}
+
+      <button style={styles.submitBtn} className="btn-primary" type="submit" disabled={isPending}>
+        {isPending ? 'Saving...' : mode === 'edit' ? '✏️ Save Changes' : '🎟️ Publish Concert'}
       </button>
 
     </form>
