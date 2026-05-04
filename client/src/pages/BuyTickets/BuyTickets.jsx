@@ -5,7 +5,7 @@ import { styles } from './BuyTickets.styles';
 import { useGetConcert } from '../../services/api/hooks/useConcert';
 import { useParams, useNavigate, useLocation } from 'react-router-dom';
 
-const stripePromise = loadStripe("pk_test_51TFD3IGfieNLbxlbjwAgxSZ4gQ0uYqZFjcIkokAqIpSTUCvBQ6LhTaecERVSRtXMU1FJyOWZWqQl5ekk492gkHC000aT6WhGTB");
+const stripePromise = loadStripe("pk_test_51TT5siLAOkyP8xoUYDmgThoaRcsCiha3Qa4UnBHvM0Nl3c7LnJ7rNjUsTocNEEEATXM7q42ae1W2zgXPQIDchOeH00R6f31Dcp");
 
 // --- Return/Success page (route: /return) ---
 export function BuyTicketsReturn() {
